@@ -27,7 +27,16 @@ fn eval(program: &str, index: &mut usize) -> Result<i32, EvalError> {
             }
 
             // skip spaces
-            ' ' => eval(&program, index),
+            ' ' => {
+                while let Some(c) = chrs.next() {
+                    if c.is_whitespace() {
+                        *index += 1;
+                    } else {
+                        break;
+                    }
+                }
+                eval(&program, index)
+            }
 
             // operators
             '+' | '-' | '*' | '/' => {
@@ -75,6 +84,7 @@ fn test_numbers() {
 #[test]
 fn test_add() {
     assert_eq!(Ok(2), eval("+ 1 1", &mut 0));
+    assert_eq!(Ok(2), eval("+ 1   1", &mut 0));
     assert_eq!(Ok(3), eval("+ 1 2", &mut 0));
     assert_eq!(Ok(579), eval("+ 123 456", &mut 0));
     assert_eq!(Ok(1000), eval("+ 999 1", &mut 0));
