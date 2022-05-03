@@ -1,0 +1,20 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "simple_prog_lang",
+      "type": "shell",
+      "options": {
+        "cwd": "simple_prog_lang"
+      },
+      "command": "cargo run '+ 1 1'",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
