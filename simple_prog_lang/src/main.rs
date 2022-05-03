@@ -12,6 +12,7 @@ fn eval(program: &str, index: &mut usize) -> Result<i32, EvalError> {
     if let Some(c) = chrs.next() {
         *index += 1;
         match c {
+            // number
             '0'..='9' => {
                 let mut val = c as i32 - '0' as i32;
                 while let Some(c) = chrs.next() {
@@ -24,17 +25,26 @@ fn eval(program: &str, index: &mut usize) -> Result<i32, EvalError> {
                 }
                 Ok(val)
             }
+
+            // skip spaces
             ' ' => eval(&program, index),
-            '+' => Ok(eval(&program, index)? + eval(&program, index)?),
-            '-' => Ok(eval(&program, index)? - eval(&program, index)?),
-            '*' => Ok(eval(&program, index)? * eval(&program, index)?),
-            '/' => {
+
+            // operators
+            '+' | '-' | '*' | '/' => {
                 let lhs = eval(&program, index)?;
                 let rhs = eval(&program, index)?;
-                if rhs == 0 {
-                    Err(EvalError::ZeroDivision)
-                } else {
-                    Ok(lhs / rhs)
+                match c {
+                    '+' => Ok(lhs + rhs),
+                    '-' => Ok(lhs - rhs),
+                    '*' => Ok(lhs * rhs),
+                    '/' => {
+                        if rhs == 0 {
+                            Err(EvalError::ZeroDivision)
+                        } else {
+                            Ok(lhs / rhs)
+                        }
+                    }
+                    _ => Err(EvalError::UnknownCharacter),
                 }
             }
             _ => Err(EvalError::UnknownCharacter),
@@ -92,6 +102,22 @@ fn test_div() {
     assert_eq!(Ok(0), eval("/ 1 2", &mut 0));
     assert_eq!(Ok(2), eval("/ 246 123", &mut 0));
     assert_eq!(Err(EvalError::ZeroDivision), eval("/ 999 0", &mut 0));
+}
+
+#[test]
+fn test_multi_operator() {
+    assert_eq!(Ok(10), eval("+ + + 1 2 3 4", &mut 0));
+    assert_eq!(Ok(14), eval("+ 2 *4 3", &mut 0));
+    assert_eq!(Ok(33), eval("+ 21* 4 3", &mut 0));
+}
+
+#[test]
+#[ignore]
+fn test_function() {
+    assert_eq!(Ok(2), eval("F[+ . .] F(1)", &mut 0));
+    assert_eq!(Ok(10), eval("F[* . 2] F(5)", &mut 0));
+    assert_eq!(Ok(16), eval("F[* . .] F(F(2))", &mut 0));
+    assert_eq!(Ok(256), eval("F[* . .] F(F(F(2)))", &mut 0));
 }
 
 #[test]
