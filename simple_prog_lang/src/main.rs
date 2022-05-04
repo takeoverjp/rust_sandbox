@@ -186,6 +186,10 @@ fn test_multi_function() {
         Ok(7),
         Parser::new().eval("F[* . .] G[+ . 3] G(F(2))", &mut 0, None)
     );
+    assert_eq!(
+        Ok(0),
+        Parser::new().eval("F[- . 5] G[F(+ . 5)] G(0)", &mut 0, None)
+    );
 }
 
 #[test]
