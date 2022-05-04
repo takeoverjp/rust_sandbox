@@ -40,13 +40,19 @@ impl Parser {
                             // function call
                             '(' => {
                                 *index += 1;
-                                let p = self.map.get(&c).unwrap().clone();
                                 let mut new_args = vec![];
                                 let last = *index + program[*index..].find(')').unwrap();
                                 while *index < last {
                                     new_args.push(self.eval(program, index, args.clone())?);
                                 }
-                                self.eval(p.as_str(), &mut 0, new_args)
+                                if c == 'P' {
+                                    // built-in function
+                                    println!("{:?}", new_args[0]);
+                                    self.eval(program, &mut (last + 1), args)
+                                } else {
+                                    let p = self.map.get(&c).unwrap().clone();
+                                    self.eval(p.as_str(), &mut 0, new_args)
+                                }
                             }
                             _ => Err(EvalError::InvalidProgram),
                         }
@@ -196,6 +202,14 @@ fn test_multi_function() {
     assert_eq!(
         Ok(0),
         Parser::new().eval("F[- a 5] G[F(+ a 5)] G(0)", &mut 0, vec![])
+    );
+}
+
+#[test]
+fn test_builtin_function() {
+    assert_eq!(
+        Ok(12),
+        Parser::new().eval("F[* a a] G[+ a 3] P(2) G(F(3))", &mut 0, vec![])
     );
 }
 
