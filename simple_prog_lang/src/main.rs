@@ -33,7 +33,7 @@ impl Parser {
                             // function definition
                             '[' => {
                                 *index += 1;
-                                let last = program.find(']').unwrap();
+                                let last = *index + program[*index..].find(']').unwrap();
                                 self.map.insert(c, program[*index..last].to_string());
                                 self.eval(program, &mut (last + 1), arg)
                             }
@@ -177,6 +177,14 @@ fn test_function() {
     assert_eq!(
         Ok(256),
         Parser::new().eval("F[* . .] F(F(F(2)))", &mut 0, None)
+    );
+}
+
+#[test]
+fn test_multi_function() {
+    assert_eq!(
+        Ok(7),
+        Parser::new().eval("F[* . .] G[+ . 3] G(F(2))", &mut 0, None)
     );
 }
 
