@@ -9,7 +9,7 @@
       "options": {
         "cwd": "simple_prog_lang"
       },
-      "command": "cargo run '+ 1 1'",
+      "command": "cargo run 'F[P(a) F(b + a b)] F(1 1)'",
       "problemMatcher": [],
       "group": {
         "kind": "build",
