@@ -52,3 +52,10 @@ Rust の非同期処理は "lazy" であり、呼び出し側がポーリング�
 `tokio::select!`マクロを使うことで、複数のasync式に対してそれぞれ完了時に実行したい処理を記述できる。  
 最初に完了したasync式以外のasync式はキャンセルされる。  
 必ず一つのasync式飲みが実行されるようにするため、すべての分岐は同一のタスク上で実行される。
+
+## tokio_stream::StreamExt
+
+streamとは`Future`のイテレータのことを指す。  
+`while let`と`StreamExt::next()`で実現する。
+
+`StreamExt::next()`を呼ぶためには、そのstreamがpinされている必要がある。  
