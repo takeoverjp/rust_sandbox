@@ -16,6 +16,7 @@ impl Future for Delay {
             println!("Hello world");
             Poll::Ready("done")
         } else {
+            println!("WARNING! Delay Future wakes task always, therefore it causes busy loop!");
             cx.waker().wake_by_ref();
             Poll::Pending
         }
