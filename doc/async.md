@@ -59,3 +59,6 @@ streamとは`Future`のイテレータのことを指す。
 `while let`と`StreamExt::next()`で実現する。
 
 `StreamExt::next()`を呼ぶためには、そのstreamがpinされている必要がある。  
+
+残念ながらRust言語はまだ`Stream`を実装するasync/await構文をサポートしていない。  
+代替策として、[async-stream crate](https://docs.rs/async-stream/latest/async_stream/)の`stream!`マクロを使うことで、yieldを使って記述できる。
