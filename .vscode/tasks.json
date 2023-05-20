@@ -15,6 +15,19 @@
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "label": "inotify_trial",
+      "type": "shell",
+      "options": {
+        "cwd": "inotify_trial"
+      },
+      "command": "cargo run",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ]
 }

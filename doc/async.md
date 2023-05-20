@@ -5,6 +5,12 @@
 - [Async in depth | Tokio - An asynchronous Rust runtime](https://tokio.rs/tokio/tutorial/async)
 - [Async をさらに掘り下げる｜Tokio チュートリアル (日本語訳)](https://zenn.dev/magurotuna/books/tokio-tutorial-ja/viewer/async_in_depth)
 
+## RustにおけるThreadと非同期タスクの比較
+
+- 生成に時間がかからない
+- メモリのオーバーヘッドが少ない
+  - スレッドの場合は、スレッドごとに用意されるスタックが100KiBとか。スレッドの多くがただシステムコールを待つだけの場合、相対的にスタックによるメモリコストが高くなる。
+  - 
 
 ## async/await
 
