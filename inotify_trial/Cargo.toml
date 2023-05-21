@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 inotify = "0.10"
+tokio = "1.28"
