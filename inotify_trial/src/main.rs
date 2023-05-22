@@ -1,24 +1,39 @@
-use inotify::{Inotify, WatchMask};
+use std::{
+    fs::File,
+    io,
+    thread,
+    time::Duration,
+};
 
-fn main() {
-    let mut inotify = Inotify::init().expect("Error while initializing inotify instance");
+use futures_util::StreamExt;
+use inotify::{
+    Inotify,
+    WatchMask,
+};
+use tempfile::TempDir;
 
-    // Watch for modify and close events.
-    inotify
-        .add_watch(
-            "/tmp/inotify-rs-test-file",
-            WatchMask::MODIFY | WatchMask::CLOSE,
-        )
-        .expect("Failed to add file watch");
+#[tokio::main]
+async fn main() -> Result<(), io::Error> {
+    let mut inotify = Inotify::init()
+        .expect("Failed to initialize inotify");
 
-    // Read events that were added with `add_watch` above.
+    let dir = TempDir::new()?;
+
+    inotify.add_watch(dir.path(), WatchMask::CREATE | WatchMask::MODIFY)?;
+
+    thread::spawn::<_, Result<(), io::Error>>(move || {
+        loop {
+            File::create(dir.path().join("file"))?;
+            thread::sleep(Duration::from_millis(500));
+        }
+    });
+
     let mut buffer = [0; 1024];
-    let events = inotify
-        .read_events_blocking(&mut buffer)
-        .expect("Error while reading events");
+    let mut stream = inotify.event_stream(&mut buffer)?;
 
-    for event in events {
-        // Handle event
-        println!("/tmp/inotify-rs-test-file is modified");
+    while let Some(event_or_error) = stream.next().await {
+        println!("event: {:?}", event_or_error?);
     }
+
+    Ok(())
 }
