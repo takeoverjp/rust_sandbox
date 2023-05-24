@@ -11,16 +11,20 @@ async fn main() -> Result<(), io::Error> {
 
     inotify.add_watch(dir, WatchMask::CREATE | WatchMask::MODIFY)?;
 
-    thread::spawn::<_, Result<(), io::Error>>(move || loop {
-        let mut file = match File::create(dir.join("file")) {
-            Err(why) => panic!("couldn't create file: {}", why),
-            Ok(file) => file,
-        };
-        match file.write_all("hoge".as_bytes()) {
-            Err(why) => panic!("couldn't write to file: {}", why),
-            Ok(_) => println!("successfully wrote to file"),
+    thread::spawn::<_, Result<(), io::Error>>(move || {
+        let mut count = 0;
+        loop {
+            let mut file = match File::create(dir.join("file")) {
+                Err(why) => panic!("couldn't create file: {}", why),
+                Ok(file) => file,
+            };
+            match file.write_all(format!("count = {}", count).as_bytes()) {
+                Err(why) => panic!("couldn't write to file: {}", why),
+                Ok(_) => println!("successfully wrote to file"),
+            }
+            thread::sleep(Duration::from_millis(500));
+            count += 1;
         }
-        thread::sleep(Duration::from_millis(500));
     });
 
     let mut buffer = [0; 1024];
