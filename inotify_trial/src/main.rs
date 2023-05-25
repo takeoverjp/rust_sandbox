@@ -3,20 +3,33 @@ use std::{fs::File, io, io::Read, io::Write, path::Path, thread, time::Duration}
 use futures_util::StreamExt;
 use inotify::{EventStream, Inotify, WatchMask};
 
-fn subscribe(buffer: &mut [u8; 1024]) -> Result<EventStream<&mut [u8; 1024]>, io::Error> {
+struct Subscriber {
+    buffer: [u8; 1024],
+}
+
+impl Subscriber {
+    pub fn new() -> Self {
+        Self { buffer: [0; 1024] }
+    }
+}
+fn subscribe(
+    buffer: &mut [u8; 1024],
+) -> Result<
+    futures_util::stream::Take<EventStream<&mut [u8; 1024]>>,
+    io::Error,
+> {
     let mut inotify = Inotify::init().expect("Failed to initialize inotify");
 
     let dir = Path::new("/tmp/inotify_trial/");
     inotify.add_watch(dir, WatchMask::CREATE | WatchMask::MODIFY)?;
-    Ok(inotify.event_stream(buffer)?)
+    let stream = inotify.event_stream(buffer)?;
+    Ok(stream.take(3))
 }
 
 #[tokio::main]
 async fn main() -> Result<(), io::Error> {
-
     let dir = Path::new("/tmp/inotify_trial/");
     let dir2 = dir.clone();
-
 
     thread::spawn::<_, Result<(), io::Error>>(move || {
         let mut count = 0;
