@@ -14,10 +14,7 @@ impl Subscriber {
 }
 fn subscribe(
     buffer: &mut [u8; 1024],
-) -> Result<
-    futures_util::stream::Take<EventStream<&mut [u8; 1024]>>,
-    io::Error,
-> {
+) -> Result<futures_util::stream::Take<EventStream<&mut [u8; 1024]>>, io::Error> {
     let mut inotify = Inotify::init().expect("Failed to initialize inotify");
 
     let dir = Path::new("/tmp/inotify_trial/");
@@ -48,7 +45,10 @@ async fn main() -> Result<(), io::Error> {
     });
 
     let mut buffer = [0; 1024];
-    let mut stream = subscribe(&mut buffer)?;
+    let mut stream = subscribe(&mut buffer)?.take(2).map(move |ev| {
+        println!("hoge");
+        ev
+    });
 
     while let Some(event_or_error) = stream.next().await {
         // println!("event: {:?}", event_or_error?);
