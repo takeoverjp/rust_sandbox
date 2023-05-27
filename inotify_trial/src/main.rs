@@ -1,10 +1,88 @@
-use std::{fs::File, io, io::Read, io::Write, path::Path, thread, time::Duration};
+use std::{fs::File, io, io::Read, io::Write, path::Path, thread, time::Duration, time::Instant};
 
+use futures::Stream;
 use futures_util::StreamExt;
 use inotify::{EventStream, Inotify, WatchMask};
+use std::pin::Pin;
+use std::task::{Context, Poll};
+use std::future::Future;
+use std::sync::{Arc, Mutex};
+use std::task::{Waker};
 
 struct Subscriber {
     buffer: [u8; 1024],
+}
+
+#[derive(Debug)]
+struct Delay {
+    when: Instant,
+}
+
+impl Future for Delay {
+    type Output = &'static str;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>)
+        -> Poll<&'static str>
+    {
+        if Instant::now() >= self.when {
+            println!("Hello world");
+            Poll::Ready("done")
+        } else {
+            // Get a handle to the waker for the current task
+            let waker = cx.waker().clone();
+            let when = self.when;
+
+            // Spawn a timer thread.
+            thread::spawn(move || {
+                let now = Instant::now();
+
+                if now < when {
+                    thread::sleep(when - now);
+                }
+
+                waker.wake();
+            });
+
+            Poll::Pending
+        }
+    }
+}
+#[derive(Debug)]
+struct Interval {
+    rem: usize,
+    delay: Delay,
+}
+
+impl Interval {
+    fn new() -> Self {
+        Self {
+            rem: 3,
+            delay: Delay { when: Instant::now() }
+        }
+    }
+}
+
+impl Stream for Interval {
+    type Item = ();
+
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>)
+        -> Poll<Option<()>>
+    {
+        if self.rem == 0 {
+            // これ以上 delay しない
+            return Poll::Ready(None);
+        }
+
+        match Pin::new(&mut self.delay).poll(cx) {
+            Poll::Ready(_) => {
+                let when = self.delay.when + Duration::from_millis(1000);
+                self.delay = Delay { when };
+                self.rem -= 1;
+                Poll::Ready(Some(()))
+            }
+            Poll::Pending => Poll::Pending,
+        }
+    }
 }
 
 impl Subscriber {
@@ -64,6 +142,12 @@ async fn main() -> Result<(), io::Error> {
                 Ok(_) => println!("{} contains:\n---\n{}\n---", name, s),
             }
         }
+    }
+
+    let mut interval_stream = Interval::new().take(4);
+    while let event = interval_stream.next().await {
+        // println!("event : {:?}", event);
+        // TODO: busy loop
     }
 
     Ok(())
