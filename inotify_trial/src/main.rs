@@ -63,10 +63,10 @@ impl Interval {
 }
 
 impl Stream for Interval {
-    type Item = ();
+    type Item = (i32);
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>)
-        -> Poll<Option<()>>
+        -> Poll<Option<(i32)>>
     {
         if self.rem == 0 {
             // これ以上 delay しない
@@ -78,7 +78,7 @@ impl Stream for Interval {
                 let when = self.delay.when + Duration::from_millis(1000);
                 self.delay = Delay { when };
                 self.rem -= 1;
-                Poll::Ready(Some(()))
+                Poll::Ready(Some(1))
             }
             Poll::Pending => Poll::Pending,
         }
