@@ -63,10 +63,10 @@ impl Interval {
 }
 
 impl Stream for Interval {
-    type Item = (i32);
+    type Item = i32;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>)
-        -> Poll<Option<(i32)>>
+        -> Poll<Option<i32>>
     {
         if self.rem == 0 {
             // これ以上 delay しない
@@ -101,6 +101,36 @@ fn subscribe(
     Ok(stream.take(3))
 }
 
+use std::path::PathBuf;
+
+struct InotifyAdapter<'a> {
+    event_stream: inotify::EventStream<&'a mut [u8; 1024]>,
+}
+
+impl<'a> InotifyAdapter<'a> {
+    fn new(path: PathBuf, buffer: &'a mut [u8; 1024]) -> Result<Self, std::io::Error> {
+        let mut inotify = Inotify::init()?;
+        inotify.add_watch(&path, WatchMask::CREATE | WatchMask::MODIFY)?;
+
+        let event_stream = inotify.event_stream(buffer).unwrap();
+
+        Ok(InotifyAdapter { event_stream })
+    }
+}
+
+impl<'a> Stream for InotifyAdapter<'a> {
+    type Item = ();
+
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+
+        match Pin::new(&mut self.event_stream).poll_next(cx) {
+            Poll::Ready(Some(Ok(event))) => Poll::Ready(Some(())),
+            Poll::Ready(Some(Err(err))) => Poll::Ready(Some(())),
+            Poll::Ready(None) => Poll::Ready(None),
+            Poll::Pending => Poll::Pending,
+        }
+    }
+}
 #[tokio::main]
 async fn main() -> Result<(), io::Error> {
     let dir = Path::new("/tmp/inotify_trial/");
@@ -142,6 +172,13 @@ async fn main() -> Result<(), io::Error> {
                 Ok(_) => println!("{} contains:\n---\n{}\n---", name, s),
             }
         }
+    }
+
+    let mut buf = [0; 1024];
+    let mut my_inotify_stream = InotifyAdapter::new(PathBuf::from("/tmp/inotify_trial/"), &mut buf).unwrap();
+    while let event = my_inotify_stream.next().await {
+        println!("my_inotify_stream : {:?}", event);
+        // TODO: busy loop
     }
 
     let mut interval_stream = Interval::new().take(4);
