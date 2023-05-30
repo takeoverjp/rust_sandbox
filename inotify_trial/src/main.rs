@@ -105,6 +105,7 @@ use std::path::PathBuf;
 
 struct InotifyAdapter<'a> {
     event_stream: inotify::EventStream<&'a mut [u8; 1024]>,
+    count: i32,
 }
 
 impl<'a> InotifyAdapter<'a> {
@@ -114,18 +115,20 @@ impl<'a> InotifyAdapter<'a> {
 
         let event_stream = inotify.event_stream(buffer).unwrap();
 
-        Ok(InotifyAdapter { event_stream })
+        Ok(InotifyAdapter { event_stream, count: 0 })
     }
 }
 
 impl<'a> Stream for InotifyAdapter<'a> {
-    type Item = ();
+    type Item = i32;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-
         match Pin::new(&mut self.event_stream).poll_next(cx) {
-            Poll::Ready(Some(Ok(event))) => Poll::Ready(Some(())),
-            Poll::Ready(Some(Err(err))) => Poll::Ready(Some(())),
+            Poll::Ready(Some(Ok(event))) => {
+                self.count += 1;
+                Poll::Ready(Some(self.count))
+            },
+            Poll::Ready(Some(Err(err))) => Poll::Ready(Some(self.count)),
             Poll::Ready(None) => Poll::Ready(None),
             Poll::Pending => Poll::Pending,
         }
