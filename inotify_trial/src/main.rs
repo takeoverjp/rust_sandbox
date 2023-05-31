@@ -125,6 +125,7 @@ impl<'a> Stream for InotifyAdapter<'a> {
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         match Pin::new(&mut self.event_stream).poll_next(cx) {
             Poll::Ready(Some(Ok(event))) => {
+                println!("{:?}", event);
                 self.count += 1;
                 Poll::Ready(Some(self.count))
             },
