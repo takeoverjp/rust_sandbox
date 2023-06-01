@@ -3,11 +3,11 @@ use std::{fs::File, io, io::Read, io::Write, path::Path, thread, time::Duration,
 use futures::Stream;
 use futures_util::StreamExt;
 use inotify::{EventStream, Inotify, WatchMask};
-use std::pin::Pin;
-use std::task::{Context, Poll};
 use std::future::Future;
+use std::pin::Pin;
 use std::sync::{Arc, Mutex};
-use std::task::{Waker};
+use std::task::Waker;
+use std::task::{Context, Poll};
 
 struct Subscriber {
     buffer: [u8; 1024],
@@ -21,9 +21,7 @@ struct Delay {
 impl Future for Delay {
     type Output = &'static str;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>)
-        -> Poll<&'static str>
-    {
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<&'static str> {
         if Instant::now() >= self.when {
             println!("Hello world");
             Poll::Ready("done")
@@ -57,7 +55,9 @@ impl Interval {
     fn new() -> Self {
         Self {
             rem: 3,
-            delay: Delay { when: Instant::now() }
+            delay: Delay {
+                when: Instant::now(),
+            },
         }
     }
 }
@@ -65,9 +65,7 @@ impl Interval {
 impl Stream for Interval {
     type Item = i32;
 
-    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>)
-        -> Poll<Option<i32>>
-    {
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<i32>> {
         if self.rem == 0 {
             // これ以上 delay しない
             return Poll::Ready(None);
@@ -115,7 +113,10 @@ impl<'a> InotifyAdapter<'a> {
 
         let event_stream = inotify.event_stream(buffer).unwrap();
 
-        Ok(InotifyAdapter { event_stream, count: 0 })
+        Ok(InotifyAdapter {
+            event_stream,
+            count: 0,
+        })
     }
 }
 
@@ -128,7 +129,7 @@ impl<'a> Stream for InotifyAdapter<'a> {
                 println!("{:?}", event);
                 self.count += 1;
                 Poll::Ready(Some(self.count))
-            },
+            }
             Poll::Ready(Some(Err(err))) => Poll::Ready(Some(self.count)),
             Poll::Ready(None) => Poll::Ready(None),
             Poll::Pending => Poll::Pending,
@@ -179,7 +180,8 @@ async fn main() -> Result<(), io::Error> {
     }
 
     let mut buf = [0; 1024];
-    let mut my_inotify_stream = InotifyAdapter::new(PathBuf::from("/tmp/inotify_trial/"), &mut buf).unwrap();
+    let mut my_inotify_stream =
+        InotifyAdapter::new(PathBuf::from("/tmp/inotify_trial/"), &mut buf).unwrap();
     while let event = my_inotify_stream.next().await {
         println!("my_inotify_stream : {:?}", event);
         // TODO: busy loop

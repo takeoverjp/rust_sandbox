@@ -17,8 +17,17 @@
       }
     },
     {
+      "label": "inotify_trial fmt",
+      "type": "shell",
+      "options": {
+        "cwd": "inotify_trial"
+      },
+      "command": "cargo fmt"
+    },
+    {
       "label": "inotify_trial",
       "type": "shell",
+      "dependsOn": "inotify_trial fmt",
       "options": {
         "cwd": "inotify_trial"
       },
