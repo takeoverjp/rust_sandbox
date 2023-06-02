@@ -5,13 +5,7 @@ use futures_util::StreamExt;
 use inotify::{EventStream, Inotify, WatchMask};
 use std::future::Future;
 use std::pin::Pin;
-use std::sync::{Arc, Mutex};
-use std::task::Waker;
 use std::task::{Context, Poll};
-
-struct Subscriber {
-    buffer: [u8; 1024],
-}
 
 #[derive(Debug)]
 struct Delay {
@@ -83,11 +77,6 @@ impl Stream for Interval {
     }
 }
 
-impl Subscriber {
-    pub fn new() -> Self {
-        Self { buffer: [0; 1024] }
-    }
-}
 fn subscribe(
     buffer: &mut [u8; 1024],
 ) -> Result<futures_util::stream::Take<EventStream<&mut [u8; 1024]>>, io::Error> {
@@ -130,7 +119,7 @@ impl<'a> Stream for InotifyAdapter<'a> {
                 self.count += 1;
                 Poll::Ready(Some(self.count))
             }
-            Poll::Ready(Some(Err(err))) => Poll::Ready(Some(self.count)),
+            Poll::Ready(Some(Err(_err))) => Poll::Ready(Some(self.count)),
             Poll::Ready(None) => Poll::Ready(None),
             Poll::Pending => Poll::Pending,
         }
@@ -182,13 +171,13 @@ async fn main() -> Result<(), io::Error> {
     let mut buf = [0; 1024];
     let mut my_inotify_stream =
         InotifyAdapter::new(PathBuf::from("/tmp/inotify_trial/"), &mut buf).unwrap();
-    while let event = my_inotify_stream.next().await {
+    while let Some(event) = my_inotify_stream.next().await {
         println!("my_inotify_stream : {:?}", event);
         // TODO: busy loop
     }
 
     let mut interval_stream = Interval::new().take(4);
-    while let event = interval_stream.next().await {
+    while let Some(_event) = interval_stream.next().await {
         // println!("event : {:?}", event);
         // TODO: busy loop
     }
