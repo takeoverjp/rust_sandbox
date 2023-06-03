@@ -128,7 +128,7 @@ impl<'a> Stream for InotifyAdapter<'a> {
 #[tokio::main]
 async fn main() -> Result<(), io::Error> {
     let dir = Path::new("/tmp/inotify_trial/");
-    let dir2 = dir.clone();
+    let dir2 = &(*dir);
 
     thread::spawn::<_, Result<(), io::Error>>(move || {
         let mut count = 0;
