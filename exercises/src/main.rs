@@ -1,9 +1,7 @@
 use std::io;
 use std::collections::HashMap;
 
-fn main() {
-    let mut line = String::new();
-    io::stdin().read_line(&mut line).unwrap();
+fn first(line: &str) -> String {
     let words = line.split(' ');
     let mut map = HashMap::new();
     for word in words {
@@ -13,7 +11,15 @@ fn main() {
     let mut v = map.into_iter().collect::<Vec<_>>();
     v.sort_by(|x, y| y.1.cmp(&x.1));
 
+    let mut ret = String::new();
     for m in v {
-        println!("{} - {}", m.0, m.1);
+        ret += &format!("{} - {}\n", m.0, m.1);
     }
+    ret
+}
+
+fn main() {
+    let mut line = String::new();
+    io::stdin().read_line(&mut line).unwrap();
+    println!("{}", first(&line));
 }
