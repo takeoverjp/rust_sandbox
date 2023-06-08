@@ -23,3 +23,21 @@ fn main() {
     io::stdin().read_line(&mut line).unwrap();
     println!("{}", first(&line));
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_first() {
+        // arrange 
+        let input = "White tigers live mostly in India Wild lions live mostly in Africa".to_string();
+        let expected = "live - 2\nmostly - 2\nin - 2\nAfrica - 1\nWhite - 1\nWild - 1\nlions - 1\nAfrica - 1\nIndia - 1\n".to_string();
+
+        // act
+        let actual = first(&input);
+
+        // assert
+        assert_eq!(expected, actual);
+    }
+}
