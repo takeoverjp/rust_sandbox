@@ -40,4 +40,17 @@ mod tests {
         // assert
         assert_eq!(expected, actual);
     }
+
+    #[test]
+    fn test_no_same_rank() {
+        // arrange 
+        let input = "a a a b b c".to_string();
+        let expected = "a - 3\nb - 2\nc - 1\n".to_string();
+
+        // act
+        let actual = first(&input);
+
+        // assert
+        assert_eq!(expected, actual);
+    }
 }
