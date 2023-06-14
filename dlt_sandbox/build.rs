@@ -5,7 +5,7 @@ fn main() {
     // Tell cargo to look for shared libraries in the specified directory
     println!("cargo:rustc-link-search=/usr/local/lib");
 
-    // Tell cargo to tell rustc to link the system bzip2
+    // Tell cargo to tell rustc to link the system dlt
     // shared library.
     println!("cargo:rustc-link-lib=dlt");
 
