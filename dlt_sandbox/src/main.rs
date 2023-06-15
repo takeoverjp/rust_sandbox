@@ -11,7 +11,7 @@ mod dlt{
 
 fn main() {
     unsafe {
-        let c_str = CString::new("Hello FFI").unwrap();
+        let c_str = CString::new(format!("{}: {}: Hello FFI", file!(), line!())).unwrap();
         dlt::dlt_log_init(dlt::DLT_LOG_TO_CONSOLE.try_into().unwrap());
         dlt::dlt_log(dlt::DltLogLevelType_DLT_LOG_FATAL, c_str.as_ptr().cast_mut());
     }
