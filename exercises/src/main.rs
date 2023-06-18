@@ -1,8 +1,9 @@
-use std::io;
+use std::env;
 use std::collections::HashMap;
 use std::fs::File;
 use std::path::Path;
 use std::io::Read;
+use std::fs::read_to_string;
 use std::collections::HashSet;
 
 fn first(line: &str) -> String {
@@ -33,9 +34,9 @@ fn first(line: &str) -> String {
 }
 
 fn main() {
-    let mut line = String::new();
-    io::stdin().read_line(&mut line).unwrap();
-    println!("{}", first(&line));
+    for line in  read_to_string(&env::args().nth(1).unwrap()).unwrap().lines() {
+        println!("{}", first(&line));
+    }
 }
 
 #[cfg(test)]
