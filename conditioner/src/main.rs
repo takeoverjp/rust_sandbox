@@ -1,6 +1,6 @@
 use clap::Parser;
 
-#[derive(Parser)]
+#[derive(Parser, Debug)]
 struct Cli {
     pattern: String,
     path: std::path::PathBuf,
@@ -8,5 +8,5 @@ struct Cli {
 
 fn main() {
     let args = Cli::parse();
-    println!("Hello, world!");
+    println!("Hello, world! {:?}", args);
 }
