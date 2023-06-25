@@ -7,6 +7,9 @@ struct Cli {
 }
 
 fn main() {
+    env_logger::init();
     let args = Cli::parse();
     println!("Hello, world! {:?}", args);
+    tracing::info!("Hello, world! {:?}", args);
+    log::info!("Hello, world! {:?}", args);
 }
