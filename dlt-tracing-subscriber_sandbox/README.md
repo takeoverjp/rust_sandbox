@@ -1,0 +1,3 @@
+```shell
+DLT_INITIAL_LOG_LEVEL="::2" DLT_LOCAL_PRINT_MODE=FORCE_ON cargo run
+```
