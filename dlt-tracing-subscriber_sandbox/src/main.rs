@@ -1,11 +1,16 @@
 use dlt_tracing_subscriber::DltLayer;
 use tracing::{error, info, warn};
 use tracing::{error_span, info_span, trace_span};
+use tracing_subscriber::fmt;
 use tracing_subscriber::prelude::*;
 
 fn main() {
     let layer = DltLayer::new("APP", "An example application");
-    tracing_subscriber::registry().with(layer).init();
+    let fmt_layer = fmt::layer();
+    tracing_subscriber::registry()
+        .with(layer)
+        .with(fmt_layer)
+        .init();
 
     {
         let outer_span = info_span!("outer", level = 0);
