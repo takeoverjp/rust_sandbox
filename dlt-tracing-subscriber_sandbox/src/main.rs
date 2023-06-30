@@ -7,9 +7,11 @@ use tracing_subscriber::prelude::*;
 fn main() {
     let layer = DltLayer::new("APP", "An example application");
     let fmt_layer = fmt::layer();
+    let fmt_layer2 = fmt::layer();
     tracing_subscriber::registry()
         .with(layer)
         .with(fmt_layer)
+        .with(fmt_layer2)
         .init();
 
     {
