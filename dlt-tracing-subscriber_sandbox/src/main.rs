@@ -17,6 +17,7 @@ where
         _ctx: tracing_subscriber::layer::Context<'_, S>,
     ) {
         println!("Got event!");
+        println!("  meatadata={:?}", event.metadata());
         println!("  level={:?}", event.metadata().level());
         println!("  target={:?}", event.metadata().target());
         println!("  name={:?}", event.metadata().name());
